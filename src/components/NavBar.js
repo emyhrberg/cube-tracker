@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import logo from "../assets/erky-logo.png";
+import logo from "../assets/erky-logo.webp";
 
 export default function NavBar() {
   return (
@@ -7,6 +7,7 @@ export default function NavBar() {
       <NavLink to="/" end>Home</NavLink>
       <NavLink to="/stats">Stats</NavLink>
       <NavLink to="/settings">Settings</NavLink>
+      <NavLink to="/login">Log In</NavLink>
 
       {/* External link with tooltip */}
       <a
