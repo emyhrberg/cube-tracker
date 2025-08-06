@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/cube-tracker/static/css/main.23321dbf.css",
+    "main.js": "/cube-tracker/static/js/main.34590f34.js",
+    "static/media/erky-logo.webp": "/cube-tracker/static/media/erky-logo.84abf3b3f14cec42c0d8.webp",
+    "index.html": "/cube-tracker/index.html",
+    "main.23321dbf.css.map": "/cube-tracker/static/css/main.23321dbf.css.map",
+    "main.34590f34.js.map": "/cube-tracker/static/js/main.34590f34.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.23321dbf.css",
+    "static/js/main.34590f34.js"
+  ]
+}
