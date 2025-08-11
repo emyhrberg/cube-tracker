@@ -1,0 +1,9 @@
+2025-08-11:
+    Settings:
+        General:
+            - Show 
+            - Scramble length: 10-20 slider.
+        
+        Display:
+            - Text Size: 10-50 slider. tooltip: Changes the size of the scramble in the timer page
+

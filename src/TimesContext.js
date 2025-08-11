@@ -3,12 +3,16 @@ import { createContext, useContext, useState } from "react";
 const TimesCtx = createContext(null);
 
 export function TimesProvider({ children }) {
-  const [entries, setEntries] = useState([]); // {id, ms}
+  const [entries, setEntries] = useState([]); // {id, ms, scramble}
 
-  const addEntry = (ms) => setEntries((e) => [{ id: Date.now(), ms }, ...e]);
+  const addEntry = (ms, scramble) =>
+    setEntries((e) => [{ id: Date.now(), ms, scramble }, ...e]);
+
+  const deleteEntry = (id) =>
+    setEntries((e) => e.filter((entry) => entry.id !== id));
 
   return (
-    <TimesCtx.Provider value={{ entries, addEntry }}>
+    <TimesCtx.Provider value={{ entries, addEntry, deleteEntry }}>
       {children}
     </TimesCtx.Provider>
   );
