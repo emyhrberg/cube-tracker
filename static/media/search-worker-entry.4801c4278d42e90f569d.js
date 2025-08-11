@@ -1,0 +1,1 @@
+import{nodeEndpointPort}from"./chunk-6WYRN27C.js";import{exposeAPI}from"./chunk-7GUL3OBQ.js";import"./chunk-RDSQRW3G.js";exposeAPI.expose&&(async()=>{await import("./inside-ICFSQUAC.js");(globalThis.postMessage?globalThis:await nodeEndpointPort()).postMessage("comlink-exposed")})();var WORKER_ENTRY_FILE_URL=import.meta.url;export{WORKER_ENTRY_FILE_URL};
