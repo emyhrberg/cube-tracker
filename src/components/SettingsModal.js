@@ -1,59 +1,69 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useSettings } from "../SettingsContext";
 
 export default function SettingsModal({ onClose }) {
-  const [tab, setTab] = useState("general");
   const {
     scrambleLength,
     setScrambleLength,
     scrambleFontSize,
     setScrambleFontSize,
+  timerFontSize,
+  setTimerFontSize,
     dateFormat,
     setDateFormat,
+  showMilliseconds,
+  setShowMilliseconds,
   } = useSettings();
 
-  // Snapshot to support Discard
-  const initialRef = useRef({ scrambleLength, scrambleFontSize, dateFormat });
+  const initialRef = useRef({
+    scrambleLength,
+    scrambleFontSize,
+    timerFontSize,
+    dateFormat,
+    showMilliseconds,
+  });
+
+  const apply = useCallback((next) => {
+    if ("scrambleLength" in next) setScrambleLength(Number(next.scrambleLength));
+    if ("scrambleFontSize" in next) setScrambleFontSize(Number(next.scrambleFontSize));
+    if ("timerFontSize" in next) setTimerFontSize(Number(next.timerFontSize));
+    if ("dateFormat" in next) setDateFormat(next.dateFormat);
+    if ("showMilliseconds" in next) setShowMilliseconds(Boolean(next.showMilliseconds));
+  }, [setScrambleLength, setScrambleFontSize, setTimerFontSize, setDateFormat, setShowMilliseconds]);
+
+  const discardAndClose = useCallback(() => {
+    apply(initialRef.current);
+    onClose?.();
+  }, [apply, onClose]);
 
   useEffect(() => {
-    // Save snapshot only once when modal mounts
-    initialRef.current = { scrambleLength, scrambleFontSize, dateFormat };
-    // Close on Esc with discard
     const onKey = (e) => {
-      if (e.key === "Escape") {
-        discardAndClose();
-      }
+      if (e.key === "Escape") discardAndClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const apply = (next) => {
-    // Live update context
-    if (typeof next.scrambleLength === "number") setScrambleLength(next.scrambleLength);
-    if (typeof next.scrambleFontSize === "number") setScrambleFontSize(next.scrambleFontSize);
-    if (typeof next.dateFormat === "string") setDateFormat(next.dateFormat);
-  };
+  }, [discardAndClose]);
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) discardAndClose();
   };
 
   const reset = () => {
-    apply({ scrambleLength: 25, scrambleFontSize: 18, dateFormat: "locale" });
+    const defaults = {
+      scrambleLength: 25,
+      scrambleFontSize: 18,
+      timerFontSize: 64,
+      dateFormat: "iso-date",
+      showMilliseconds: true,
+    };
+    initialRef.current = defaults; // reset baseline
+    apply(defaults);
   };
 
-  const discardAndClose = () => {
-    const snap = initialRef.current;
-    apply(snap);
+  const saveAndClose = useCallback(() => {
+    initialRef.current = { scrambleLength, scrambleFontSize, timerFontSize, dateFormat, showMilliseconds };
     onClose?.();
-  };
-
-  const saveAndClose = () => {
-    // Already applied live; simply close.
-    onClose?.();
-  };
+  }, [scrambleLength, scrambleFontSize, timerFontSize, dateFormat, showMilliseconds, onClose]);
 
   return (
     <div
@@ -65,7 +75,7 @@ export default function SettingsModal({ onClose }) {
         display: "grid",
         placeItems: "center",
         zIndex: 1000,
-        padding: 16,
+        padding: 16
       }}
       aria-modal="true"
       role="dialog"
@@ -74,15 +84,17 @@ export default function SettingsModal({ onClose }) {
         style={{
           width: "min(680px, 100%)",
           maxHeight: "min(80vh, 800px)",
-          background: "rgba(17, 24, 39, 0.88)", // translucent panel
+          background: "rgba(17, 24, 39, 0.88)",
           color: "#fff",
           borderRadius: 12,
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
           display: "flex",
-          overflow: "hidden",
+          overflow: "visible",
           backdropFilter: "blur(8px)",
           flexDirection: "column",
+          position: "relative",
+          zIndex: 1001
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -90,79 +102,37 @@ export default function SettingsModal({ onClose }) {
           <h2 style={{ margin: 0, fontSize: 18 }}>Settings</h2>
         </div>
 
-        <div style={{ display: "flex", minHeight: 260 }}>
-          {/* Left tabs */}
-          <div style={{ width: 140, borderRight: "1px solid rgba(255,255,255,0.08)" }}>
-            <Tab label="General" active={tab === "general"} onClick={() => setTab("general")} />
-            <Tab label="Display" active={tab === "display"} onClick={() => setTab("display")} />
-          </div>
+  <div style={{ padding: 16, display: "grid", gap: 12, overflowY: "auto" }}>
+          <Row label="Date format:">
+      <select value={dateFormat} onChange={(e) => apply({ dateFormat: e.target.value })} style={selectStyle}>
+              <option value="iso-date">YYYY-MM-DD</option>
+              <option value="iso-datetime">YYYY-MM-DD HH:mm:ss</option>
+              <option value="locale-date">Locale date</option>
+              <option value="locale-datetime">Locale date & time</option>
+            </select>
+          </Row>
 
-          {/* Right content */}
-          <div style={{ flex: 1, padding: 16, overflow: "auto", display: "grid", gap: 16 }}>
-            {tab === "general" && (
-              <>
-                <h3 style={{ margin: 0, fontSize: 16 }}>General</h3>
-                <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span>Scramble length</span>
-                  <input
-                    type="number"
-                    value={scrambleLength}
-                    min={10}
-                    max={40}
-                    onChange={(e) => apply({ scrambleLength: Number(e.target.value) })}
-                    style={inputStyle}
-                  />
-                  <span>moves</span>
-                </label>
-              </>
-            )}
+          <Row label="Scramble length:">
+      <input type="number" value={scrambleLength} min={10} max={40} onChange={(e) => apply({ scrambleLength: e.target.value })} style={inputStyle} />
+          </Row>
 
-            {tab === "display" && (
-              <>
-                <h3 style={{ margin: 0, fontSize: 16 }}>Display</h3>
-                <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span>Scramble font size</span>
-                  <input
-                    type="number"
-                    value={scrambleFontSize}
-                    min={10}
-                    max={40}
-                    onChange={(e) => apply({ scrambleFontSize: Number(e.target.value) })}
-                    style={inputStyle}
-                  />
-                  <span>px</span>
-                </label>
+          <Row label="Scramble font size:">
+      <input type="number" value={scrambleFontSize} min={10} max={40} onChange={(e) => apply({ scrambleFontSize: e.target.value })} style={inputStyle} />
+          </Row>
 
-                <label style={{ display: "grid", gap: 6 }}>
-                  <span>Date format</span>
-                  <select
-                    value={dateFormat}
-                    onChange={(e) => apply({ dateFormat: e.target.value })}
-                    style={inputStyle}
-                  >
-                    <option value="locale">Locale</option>
-                    <option value="iso">ISO (YYYY-MM-DD)</option>
-                    <option value="us">US (MM/DD/YYYY)</option>
-                  </select>
-                </label>
-              </>
-            )}
-          </div>
+          <Row label="Timer size:">
+            <input type="number" value={timerFontSize} min={24} max={160} onChange={(e) => apply({ timerFontSize: e.target.value })} style={inputStyle} />
+          </Row>
+
+          <Row label="Show milliseconds:">
+            <select value={showMilliseconds ? "yes" : "no"} onChange={(e) => apply({ showMilliseconds: e.target.value === "yes" })} style={selectStyle}>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </Row>
         </div>
 
-        {/* Footer buttons */}
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            justifyContent: "flex-end",
-            padding: 12,
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-            background: "rgba(0,0,0,0.15)",
-            position: "sticky",
-            bottom: 0,
-          }}
-        >
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", padding: 12, borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.15)" }}>
           <button onClick={reset} style={btnGhost}>Reset</button>
           <div style={{ flex: 1 }} />
           <button onClick={discardAndClose} style={btnSecondary}>Discard</button>
@@ -173,32 +143,32 @@ export default function SettingsModal({ onClose }) {
   );
 }
 
-function Tab({ label, active, onClick }) {
+function Row({ label, children }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        width: "100%",
-        textAlign: "left",
-        padding: "10px 12px",
-        background: active ? "rgba(255,255,255,0.12)" : "transparent",
-        color: "#fff",
-        border: "none",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
-        cursor: "pointer",
-      }}
-    >
-      {label}
-    </button>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", gap: 12 }}>
+      <div style={{ color: "#cbd5e1" }}>{label}</div>
+      <div style={{ justifySelf: "end", width: "100%", maxWidth: 260 }}>{children}</div>
+    </div>
   );
 }
 
 const inputStyle = {
-  background: "rgba(255,255,255,0.08)",
-  color: "#fff",
-  border: "1px solid rgba(255,255,255,0.15)",
+  background: "#ffffff",
+  color: "#111111",
+  border: "1px solid #cbd5e1",
   borderRadius: 8,
   padding: "8px 10px",
+  width: "100%",
+};
+
+const selectStyle = {
+  background: "#ffffff",
+  color: "#111111",
+  border: "1px solid #cbd5e1",
+  borderRadius: 8,
+  padding: "8px 10px",
+  width: "100%",
+  appearance: "auto",
 };
 
 const baseBtn = {
@@ -209,23 +179,6 @@ const baseBtn = {
   cursor: "pointer",
 };
 
-const btnPrimary = {
-  ...baseBtn,
-  background: "linear-gradient(180deg,#22c55e,#16a34a)",
-  color: "#051b0c",
-  borderColor: "rgba(0,0,0,0.2)",
-};
-
-const btnSecondary = {
-  ...baseBtn,
-  background: "rgba(255,255,255,0.08)",
-  color: "#fff",
-  borderColor: "rgba(255,255,255,0.2)",
-};
-
-const btnGhost = {
-  ...baseBtn,
-  background: "transparent",
-  color: "rgba(255,255,255,0.8)",
-  borderColor: "rgba(255,255,255,0.2)",
-};
+const btnPrimary = { ...baseBtn, background: "linear-gradient(180deg,#22c55e,#16a34a)", color: "#051b0c", borderColor: "rgba(0,0,0,0.2)" };
+const btnSecondary = { ...baseBtn, background: "rgba(255,255,255,0.08)", color: "#fff", borderColor: "rgba(255,255,255,0.2)" };
+const btnGhost = { ...baseBtn, background: "transparent", color: "rgba(255,255,255,0.8)", borderColor: "rgba(255,255,255,0.2)" };

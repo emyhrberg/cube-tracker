@@ -11,12 +11,20 @@ body {
 .wrapper {
     max-width: 46rem;
     margin: 0 auto;
-    min-height: 100vh;
+    /* Was forcing full-viewport height and pushing content down; remove to avoid large top gap */
+    min-height: auto;
+}
+
+/* full-width content below navbar */
+.page-content {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0.75rem 1rem;
 }
 
 /* navigation bar */
 .top-nav {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     display: flex;
     gap: 1rem;
     align-items: center;
@@ -64,4 +72,12 @@ hr {
 
 .ext-link:hover {
     color: #467ccc;
+}
+
+/* solves list hover */
+.solves-list .solve-item-btn:hover {
+    background: rgba(34, 197, 94, 0.12); /* green-ish highlight */
+}
+.solve-item-btn {
+    transition: background 0.15s ease;
 }

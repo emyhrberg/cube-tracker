@@ -1,19 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import logo from "../assets/erky-logo.webp";
+import { auth, onAuthStateChanged } from "../firebase";
 import SettingsModal from "./SettingsModal";
 
 export default function NavBar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    return unsub;
+  }, []);
 
   return (
     <>
       <nav className="top-nav" style={{ display: "flex", alignItems: "center" }}>
         <a
-          href="https://github.com/emyhrberg"
+          href="https://github.com/emyhrberg/cube-tracker"
           target="_blank"
           rel="noopener noreferrer"
-          title="https://github.com/emyhrberg"
+          title="https://github.com/emyhrberg/cube-tracker"
         >
           <img className="logo" src={logo} alt="logo" width="50" height="50" />
         </a>
@@ -21,7 +28,7 @@ export default function NavBar() {
           Timer
         </NavLink>
         <NavLink to="/stats">Stats</NavLink>
-        <NavLink to="/login">Log In</NavLink>
+  <NavLink to="/login">{user ? (user.displayName?.split(" ")[0] || "Account") : "Log In"}</NavLink>
 
         {/* Settings Icon */}
         <button
