@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/cube-tracker/static/css/main.1c47f31f.css",
-    "main.js": "/cube-tracker/static/js/main.9123e78c.js",
+    "main.js": "/cube-tracker/static/js/main.05130216.js",
     "static/js/621.56d76e6a.chunk.js": "/cube-tracker/static/js/621.56d76e6a.chunk.js",
     "static/js/2.5b8d7d7e.chunk.js": "/cube-tracker/static/js/2.5b8d7d7e.chunk.js",
     "static/js/649.36172aa0.chunk.js": "/cube-tracker/static/js/649.36172aa0.chunk.js",
@@ -26,7 +26,7 @@
     "index.html": "/cube-tracker/index.html",
     "static/media/search-worker-entry.js": "/cube-tracker/static/media/search-worker-entry.4801c4278d42e90f569d.js",
     "main.1c47f31f.css.map": "/cube-tracker/static/css/main.1c47f31f.css.map",
-    "main.9123e78c.js.map": "/cube-tracker/static/js/main.9123e78c.js.map",
+    "main.05130216.js.map": "/cube-tracker/static/js/main.05130216.js.map",
     "621.56d76e6a.chunk.js.map": "/cube-tracker/static/js/621.56d76e6a.chunk.js.map",
     "2.5b8d7d7e.chunk.js.map": "/cube-tracker/static/js/2.5b8d7d7e.chunk.js.map",
     "649.36172aa0.chunk.js.map": "/cube-tracker/static/js/649.36172aa0.chunk.js.map",
@@ -50,6 +50,6 @@
   },
   "entrypoints": [
     "static/css/main.1c47f31f.css",
-    "static/js/main.9123e78c.js"
+    "static/js/main.05130216.js"
   ]
 }
