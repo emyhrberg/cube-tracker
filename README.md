@@ -6,8 +6,17 @@ A website that tracks entries for speedcubing times.
 
 https://emyhrberg.github.io/cube-tracker
 
-## Development
+## Run
 
-Run locally with `npm start`
+To run the website in a web browser with localhost:
 
-Build with `npm build`
+`npm start`
+
+## Deploy
+
+To deploy the website using GitHub Pages:
+
+```
+npm build
+npm run deploy
+```
