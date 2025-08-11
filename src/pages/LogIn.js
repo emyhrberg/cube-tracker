@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { auth, logOut, onAuthStateChanged, signInWithGoogle } from "../firebase"; // modular API usage
+import { useToasts } from "../ToastContext";
 
 function GoogleButton({ onClick, variant = "light" }) {
   const isDark = variant === "dark";
@@ -34,6 +35,7 @@ function GoogleButton({ onClick, variant = "light" }) {
 
 export default function LogIn() {
   const [user, setUser] = useState(null);
+  const { push } = useToasts();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
@@ -45,7 +47,18 @@ export default function LogIn() {
       {!user ? (
         <div style={{ textAlign: "center" }}>
           <h1 style={{ marginBottom: 16 }}>Log in</h1>
-          <GoogleButton onClick={signInWithGoogle} variant="light" />
+          <GoogleButton
+            onClick={async () => {
+              const res = await signInWithGoogle();
+              if (!res?.ok && res?.error) {
+                const msg = res.error?.code === "auth/unauthorized-domain"
+                  ? "This domain isn't authorized for Google sign-in. See README for setup."
+                  : res.error.message || "Sign-in failed.";
+                push(msg, "error");
+              }
+            }}
+            variant="light"
+          />
           {/* use variant="dark" if your page background is black */}
           <p style={{ marginTop: 12, opacity: 0.7, fontSize: 12 }}>
             By continuing you agree to the Terms & Privacy Policy.

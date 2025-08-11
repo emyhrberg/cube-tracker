@@ -19,8 +19,32 @@ export function TimesProvider({ children }) {
   const [entries, setEntries] = useState([]); // {id (timestamp), ms, scramble, comment?, docId?}
   const unsubRef = useRef(null);
 
+  // localStorage helpers for signed-out mode
+  const LOCAL_KEY = "local-solves-v1";
+  const loadLocal = () => {
+    try {
+      const raw = localStorage.getItem(LOCAL_KEY);
+      if (!raw || raw === "undefined" || raw === "null") return [];
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return arr.filter(Boolean);
+      return [];
+    } catch (e) {
+      console.warn("Failed to parse local solves:", e);
+      return [];
+    }
+  };
+  const saveLocal = (arr) => {
+    try {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(arr));
+    } catch (e) {
+      console.warn("Failed to save local solves:", e);
+    }
+  };
+
   // Subscribe to Firestore solves when signed in
   useEffect(() => {
+    // On first mount, show local solves until auth determines state
+    setEntries(loadLocal());
     const unsubAuth = onAuthStateChanged(auth, (u) => {
       // cleanup previous
       if (unsubRef.current) {
@@ -28,16 +52,17 @@ export function TimesProvider({ children }) {
         unsubRef.current = null;
       }
       if (!u) {
-        setEntries([]);
+        // Not signed in: use local storage
+        setEntries(loadLocal());
         return;
       }
-    const q = query(collection(db, `users/${u.uid}/solves`), orderBy("createdAt", "desc"));
+      const q = query(collection(db, `users/${u.uid}/solves`), orderBy("createdAt", "desc"));
       const unsubSolves = onSnapshot(q, (snap) => {
         const arr = snap.docs.map((d) => {
           const data = d.data() || {};
           const createdAtMs = data.createdAt?.toMillis ? data.createdAt.toMillis() : Date.now();
           const ms = typeof data.timeMs === "number" ? data.timeMs : data.ms;
-      return { id: createdAtMs, ms, scramble: data.scramble || "", comment: data.comment || "", docId: d.id };
+          return { id: createdAtMs, ms, scramble: data.scramble || "", comment: data.comment || "", docId: d.id };
         });
         setEntries(arr);
       });
@@ -53,7 +78,12 @@ export function TimesProvider({ children }) {
     const u = auth.currentUser;
     if (!u) {
       // Local-only when signed out
-      setEntries((e) => [{ id: Date.now(), ms, scramble, comment: "" }, ...e]);
+      const newEntry = { id: Date.now(), ms, scramble, comment: "" };
+      setEntries((e) => {
+        const next = [newEntry, ...e];
+        saveLocal(next);
+        return next;
+      });
       return { ok: true, local: true };
     }
     try {
@@ -67,7 +97,12 @@ export function TimesProvider({ children }) {
     } catch (err) {
       console.error("Failed to save solve to Firestore:", err);
       // Fallback to local insert if write fails
-      setEntries((e) => [{ id: Date.now(), ms, scramble, comment: "" }, ...e]);
+      const newEntry = { id: Date.now(), ms, scramble, comment: "" };
+      setEntries((e) => {
+        const next = [newEntry, ...e];
+        saveLocal(next);
+        return next;
+      });
       return { ok: false, error: err };
     }
   };
@@ -75,14 +110,16 @@ export function TimesProvider({ children }) {
   const deleteEntry = async (idOrDocId) => {
     setEntries((prev) => {
       const entry = prev.find((e) => e.id === idOrDocId || e.docId === idOrDocId);
-      // Firestore delete if possible
       const u = auth.currentUser;
+      // Firestore delete if possible
       if (entry?.docId && u) {
         deleteDoc(doc(db, `users/${u.uid}/solves/${entry.docId}`)).catch((e) =>
           console.error("Failed to delete solve:", e)
         );
       }
-      return prev.filter((e) => e.id !== idOrDocId && e.docId !== idOrDocId);
+      const next = prev.filter((e) => e.id !== idOrDocId && e.docId !== idOrDocId);
+      if (!u || !entry?.docId) saveLocal(next);
+      return next;
     });
   };
 
@@ -106,7 +143,11 @@ export function TimesProvider({ children }) {
       }
     }
     // Local update
-    setEntries((prev) => prev.map((e) => (e.id === idOrDocId || e.docId === idOrDocId ? { ...e, ...updates } : e)));
+    setEntries((prev) => {
+      const next = prev.map((e) => (e.id === idOrDocId || e.docId === idOrDocId ? { ...e, ...updates } : e));
+      saveLocal(next);
+      return next;
+    });
     return { ok: true, local: true };
   };
 

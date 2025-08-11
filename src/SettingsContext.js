@@ -11,17 +11,21 @@ export function SettingsProvider({ children }) {
   const [sortBy, setSortBy] = useState("date");
   const [showMilliseconds, setShowMilliseconds] = useState(true);
 
-  // Load from localStorage
+  // Load from localStorage (robust to bad values like the string "undefined")
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("settings") || "{}");
+      const raw = localStorage.getItem("settings");
+      let saved = {};
+      if (raw && raw !== "undefined" && raw !== "null") {
+        saved = JSON.parse(raw);
+      }
       if (typeof saved.scrambleLength === "number") setScrambleLength(saved.scrambleLength);
       if (typeof saved.scrambleFontSize === "number") setScrambleFontSize(saved.scrambleFontSize);
-  if (typeof saved.timerFontSize === "number") setTimerFontSize(saved.timerFontSize);
+      if (typeof saved.timerFontSize === "number") setTimerFontSize(saved.timerFontSize);
       if (typeof saved.dateFormat === "string") setDateFormat(saved.dateFormat);
       if (typeof saved.filterRange === "string") setFilterRange(saved.filterRange);
       if (typeof saved.sortBy === "string") setSortBy(saved.sortBy);
-  if (typeof saved.showMilliseconds === "boolean") setShowMilliseconds(saved.showMilliseconds);
+      if (typeof saved.showMilliseconds === "boolean") setShowMilliseconds(saved.showMilliseconds);
     } catch (err) {
       console.warn("Failed to parse settings from localStorage:", err);
     }

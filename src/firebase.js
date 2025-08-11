@@ -35,7 +35,10 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 
+let signingIn = false;
 export async function signInWithGoogle() {
+  if (signingIn) return { ok: false, error: new Error("Sign-in already in progress") };
+  signingIn = true;
   try {
     if (/Mobi|Android/i.test(navigator.userAgent)) {
       // Use redirect on mobile (popup blockers)
@@ -44,8 +47,12 @@ export async function signInWithGoogle() {
       // Use popup on desktop for better UX and fewer storage issues
       await signInWithPopup(auth, googleProvider);
     }
+    return { ok: true };
   } catch (err) {
     console.error("Sign-in error:", err);
+    return { ok: false, error: err };
+  } finally {
+    signingIn = false;
   }
 }
 

@@ -10,7 +10,9 @@ https://emyhrberg.github.io/cube-tracker
 
 To run the website in a web browser with localhost:
 
-`npm start`
+```
+npm start
+```
 
 ## Deploy
 
