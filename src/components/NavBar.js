@@ -4,7 +4,7 @@ import logo from "../assets/erky-logo.webp";
 export default function NavBar() {
   return (
     <nav className="top-nav">
-      <NavLink to="/" end>Home</NavLink>
+      <NavLink to="/timer" end>Timer</NavLink>
       <NavLink to="/stats">Stats</NavLink>
       <NavLink to="/settings">Settings</NavLink>
       <NavLink to="/login">Log In</NavLink>

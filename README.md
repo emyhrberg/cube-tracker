@@ -1,15 +1,13 @@
-# Getting Started with Create React App
+# Cube Tracker
 
-This project was made to track, analyze, and visualize various cube tracking aspects.
-It uses React and is published at emyhrberg.github.io/cube-tracker
+A website that tracks entries for speedcubing times.
 
-## Available Scripts
+## Website
 
-In the project directory, you can run:
+https://emyhrberg.github.io/cube-tracker
 
-### `npm start`
+## Development
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Run locally with `npm start`
 
-The page will reload when you make changes.\
+Build with `npm build`

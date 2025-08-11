@@ -1,8 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import NavBar from "./components/NavBar";
-import Home from "./pages/Home";
 import Settings from "./pages/Settings";
 import Stats from "./pages/Stats";
+import Timer from "./pages/Timer";
 import "./styles.css";
 
 export default function App() {
@@ -10,7 +10,8 @@ export default function App() {
     <div className="wrapper">
       <NavBar />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Timer />} />
+        <Route path="/timer" element={<Timer />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
